@@ -1,0 +1,12 @@
+
+dotnet new sln -o UqsMathLib 
+cd  UqsMathLib
+dotnet new console  -o  Uqs.Arithmetic.Console -f net6.0
+dotnet new classlib -o  Uqs.Arithmetic         -f net6.0
+dotnet new xunit    -o  Uqs.Arithmetic.Tests.Unit  -f net6.0
+
+dotnet sln add .\Uqs.Arithmetic.Console\Uqs.Arithmetic.Console.csproj
+dotnet sln add .\Uqs.Arithmetic\Uqs.Arithmetic.csproj
+dotnet sln add .\Uqs.Arithmetic.Tests.Unit\Uqs.Arithmetic.Tests.Unit.csproj
+dotnet add .\Uqs.Arithmetic.Tests.Unit\Uqs.Arithmetic.Tests.Unit  reference .\Uqs.Arithmetic\Uqs.Arithmetic
+dotnet build UqsMathLib.sln
