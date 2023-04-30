@@ -1,7 +1,5 @@
+using AdamTibi.OpenWeather;
 using Microsoft.AspNetCore.Mvc;
-//using AdamTibi.OpenWeather;
-using OpenWeather;
-
 
 namespace Uqs.Weather.Controllers;
 
@@ -9,28 +7,30 @@ namespace Uqs.Weather.Controllers;
 [Route("api/[controller]/[action]")]
 [Produces("application/json")]
 public class WeatherForecastController : ControllerBase
-{   
+{
     private readonly int FORECAST_DAYS = 5;
-    private readonly double GREENWICH_LAT = 51.476852;
-    private readonly double GREENWICH_LON = -0.000500;
+    // private readonly double GREENWICH_LAT = 51.476852;
+    // private readonly double GREENWICH_LON = -0.000500;
     private readonly INowWrapper _nowWrapper;
     private readonly IRandomWrapper _randomWrapper;
+    private readonly IClient? _client;
 
 
-    private readonly OpenWeatherClient _IClient;
     private readonly ILogger<WeatherForecastController> _logger;
 
+  
     public WeatherForecastController(ILogger<WeatherForecastController> logger,
-                                    IConfiguration configuration,
+                                    IClient client,
                                     IRandomWrapper randomWrapper,
-                                    INowWrapper nowWrapper,
-                                    OpenWeatherClient client)
+                                    INowWrapper nowWrapper
+                                    )
     {
         this._logger = logger;
         this._randomWrapper = randomWrapper;
         this._nowWrapper = nowWrapper;
-        this._IClient = client;
+        this._client = client;
     }
+
 
     private static readonly string[] Summaries = new[]
     {
@@ -78,7 +78,7 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet(Name = "ConvertCToF")]
-    public double ConvertCToF(double c, 
+    public double ConvertCToF(double c,
                              [FromServices] ILogger<WeatherForecastController> logger)
     {
         double f = c * (9d / 5d) + 32;
@@ -86,39 +86,34 @@ public class WeatherForecastController : ControllerBase
         return f;
     }
 
-    [HttpGet(Name = "GetReal")]
+ 
+    [HttpGet("GetRealWeatherForecast")]
     public async Task<IEnumerable<WeatherForecast>> GetReal()
     {
-        //string apiKey = _configuration["OpenWeather:Key"];
-        //HttpClient httpClient = new HttpClient();
-        //_client = new Client(apiKey, httpClient);
-        //Client openWeatherClient = new Client(apiKey, httpClient);
-                          
-        /*
-        Console.WriteLine(" Instancia de openWeather => " +
-                          $" Nubes: ${res.Clouds.Cloudiness} " +
-                          $" Clima: ${res.Weather[0].Description} " +  
-                          $" Temp.: ${res.Main.Temperature.ToString()} " );   */
+        const decimal GREENWICH_LAT = 51.4810m;
+        const decimal GREENWICH_LON = 0.0052m;
         WeatherForecast[] wfs = new WeatherForecast[FORECAST_DAYS];
 
-         
-        for (var i = 0; i < FORECAST_DAYS; i++)  
+        if (_client != null)
         {
-            var wf = wfs[i] = new WeatherForecast();
+        
+            for (int i = 0; i < wfs.Length; i++)
+            {
+                OneCallResponse res = await _client.OneCallAsync
+                                        (GREENWICH_LAT, GREENWICH_LON, new[] {
+                                            Excludes.Current, 
+                                            Excludes.Minutely,
+                                            Excludes.Hourly, 
+                                            Excludes.Alerts }, 
+                                            Units.Metric);
 
-            WeatherData res = await this._IClient.GetWeatherAsync
-                            ( GREENWICH_LAT,
-                              GREENWICH_LON
-                            );
-
-            res.DateTime = _nowWrapper.Now.AddDays(i+1);              
-            wf.Date = res.DateTime.DateTime;    
-
-            wf.TemperatureC = (int)Math.Round(res.Main.Temperature);
-            wf.Summary = MapFeelToTemp(wf.TemperatureC);
+                var wf = wfs[i] = new WeatherForecast();
+                wf.Date = res.Daily[i + 1].Dt;
+                double forecastedTemp = res.Daily[i + 1].Temp.Day;
+                wf.TemperatureC = (int)Math.Round(forecastedTemp);
+                wf.Summary = MapFeelToTemp(wf.TemperatureC);
+            }
         }
-    
-
         return wfs;
     }
 }

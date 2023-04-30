@@ -1,4 +1,5 @@
 //using AdamTibi.OpenWeather;
+using AdamTibi.OpenWeather;
 using OpenWeather;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,23 +11,23 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<OpenWeather.OpenWeatherClient>(_ =>
-{
+builder.Services.AddSingleton<IClient>( _ => {
     string apiKey = builder.Configuration["OpenWeather:Key"];
-    bool isLoad = bool.Parse(builder.Configuration["LoadTest:IsActive"]);
-    if (isLoad)
-    {
-        return new ClientStub(apiKey, Unit.Metric);
-    }
-    
+    HttpClient httpClient = new HttpClient();
+    return new Client(apiKey, httpClient);
+});
+
+builder.Services.AddSingleton<OpenWeather.OpenWeatherClient>( _ =>
+{
+    string apiKey = builder.Configuration["OpenWeather:Key"];  
     HttpClient httpClient = new HttpClient();
     return new OpenWeather.OpenWeatherClient(apiKey, Unit.Metric);
 });
 
 // una nueva instancia es proveida cada vez que es requerida
-builder.Services.AddTransient<IRandomWrapper>(_ => new RandomWrapper());
+builder.Services.AddTransient<IRandomWrapper>(_ => new RandomWrapper() );
 
-builder.Services.AddSingleton<INowWrapper>(_ => new NowWrapper());
+builder.Services.AddSingleton<INowWrapper>(   _ => new NowWrapper()    );
 
 var app = builder.Build();
 
