@@ -19,6 +19,11 @@ dotnet new xunit -o Uqs.Weather.Tests.Unit -f net6.0
 dotnet sln add .\Uqs.Weather.Tests.Unit\
 dotnet add Uqs.Weather.Tests.Unit reference Uqs.Weather
 
+rem Installing NSubstitute
+cd .\Uqs.Weather.Tests.Unit\
+dotnet add package NSubstitute
+dotnet add package NSubstitute.Analyzers.CSharp
+cd ..
 
 rem dotnet new xunit -o Uqs.Weather.Tests.Integration   -f net6.0
 rem dotnet sln add    .\Uqs.Weather.Tests.Integration\ 

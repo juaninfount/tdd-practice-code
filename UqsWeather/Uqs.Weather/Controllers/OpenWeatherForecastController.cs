@@ -75,7 +75,7 @@ public class OpenWeatherForecastController : ControllerBase
 
                 // dependency unit
                 WeatherData res = await this._openWeatherClient.GetWeatherAsync
-                                (GREENWICH_LAT,
+                                ( GREENWICH_LAT,
                                   GREENWICH_LON
                                 );
 
