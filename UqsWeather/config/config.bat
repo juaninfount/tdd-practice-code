@@ -25,8 +25,11 @@ dotnet add package NSubstitute
 dotnet add package NSubstitute.Analyzers.CSharp
 cd ..
 
-rem dotnet new xunit -o Uqs.Weather.Tests.Integration   -f net6.0
-rem dotnet sln add    .\Uqs.Weather.Tests.Integration\ 
+dotnet new xunit -o Uqs.Weather.Tests.Integration   -f net6.0
+dotnet sln add .\Uqs.Weather.Tests.Integration\ 
+cd .\Uqs.Weather.Tests.Integration\
+dotnet add package System.Net.Http.Json
+cd ..
 rem dotnet     add      Uqs.Weather.Tests.integration  reference  Uqs.Weather
 rem dotnet new xunit -o Uqs.Weather.Tests.Sintegration  -f net6.0
 rem dotnet sln add    .\Uqs.Weather.Tests.Sintegration\
